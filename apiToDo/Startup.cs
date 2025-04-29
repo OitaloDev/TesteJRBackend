@@ -1,16 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using apiToDo.Services;
 
 namespace apiToDo
 {
@@ -23,18 +17,21 @@ namespace apiToDo
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "apiToDo", Version = "v1" });
             });
+
+            // Registrar o serviço de Tarefas (Injeção de Dependência)
+            // AddScoped: Cria uma instância por requisição HTTP.
+            // AddSingleton: Cria uma única instância para toda a aplicação (adequado para lista estática em memória).
+            // AddTransient: Cria uma nova instância cada vez que é solicitado.
+            services.AddSingleton<ITarefaService, TarefaService>(); // Usando Singleton devido à lista estática
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -45,10 +42,11 @@ namespace apiToDo
             }
 
             app.UseHttpsRedirection();
-
             app.UseRouting();
 
-            app.UseAuthorization();
+            // Removido UseAuthorization por enquanto, pois o endpoint lstTarefas original tinha [Authorize]
+            // e não há configuração de autenticação no projeto base.
+            // app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
